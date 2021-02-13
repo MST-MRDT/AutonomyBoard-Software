@@ -24,20 +24,21 @@ def get_floor_mask(reg_img, dimX, dimY):
     test_img = cv2.medianBlur(test_img, 5)
     test_img = cv2.GaussianBlur(test_img, (5, 5), 0)
 
+
     test_img = cv2.cvtColor(test_img, cv2.COLOR_BGR2HSV)
 
     lower_portion = test_img[int((14 / 15) * dimY) :]
     smallest = lower_portion.min(axis=(0, 1))
     largest = lower_portion.max(axis=(0, 1))
 
-    # If the largest color value sums up to under 600, it clearly isn't white
-    # so we don't risk filtering out the AR tag itself
-    if (sum(largest) < 600):
+    # If the saturation is greater than 20% or value is less than 60 
+    # then this certainly isn't white and we don't risk filtering out the AR tag
+    if largest[1] > 50 and largest[2] < 150:
         # Get a mask of the possible range of colors of the floor
         mask = cv2.inRange(test_img, smallest, largest)
     else:
         # If it is white, filter out some other annoying color like green
-        mask = cv2.inRange(test_img, [0,255,0], [0,255,0])
+        mask = cv2.inRange(test_img, [70,150,100], [70,255,255])
 
     # Invert the mask so we select everything BUT the floor
     mask = cv2.bitwise_not(mask)
