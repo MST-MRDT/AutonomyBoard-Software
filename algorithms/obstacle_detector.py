@@ -30,8 +30,14 @@ def get_floor_mask(reg_img, dimX, dimY):
     smallest = lower_portion.min(axis=(0, 1))
     largest = lower_portion.max(axis=(0, 1))
 
-    # Get a mask of the possible range of colors of the floor
-    mask = cv2.inRange(test_img, smallest, largest)
+    # If the largest color value sums up to under 600, it clearly isn't white
+    # so we don't risk filtering out the AR tag itself
+    if (sum(largest) < 600):
+        # Get a mask of the possible range of colors of the floor
+        mask = cv2.inRange(test_img, smallest, largest)
+    else:
+        # If it is white, filter out some other annoying color like green
+        mask = cv2.inRange(test_img, [0,255,0], [0,255,0])
 
     # Invert the mask so we select everything BUT the floor
     mask = cv2.bitwise_not(mask)
